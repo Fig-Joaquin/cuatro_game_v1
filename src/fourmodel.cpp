@@ -3,7 +3,7 @@
 #include <iostream>
 
 /// Constructor
-ConnectFour::ConnectFour() : board(rows, std::vector<char>(cols, ' ')), currentPlayer('X') {}
+ConnectFour::ConnectFour() : board(rows, std::vector<char>(cols, ' ')), currentPlayer('C') {}
 
 // Imprime el estado actual del tablero de juego en la consola.
 // Cada celda del tablero se muestra con el contenido actual: 'X', 'O' o ' ' (vacío).
@@ -88,11 +88,11 @@ bool ConnectFour::checkWin() const {
 
 void ConnectFour::togglePlayer() {
     // Cambia el jugador actual.
-    // Si el jugador actual es 'X', lo cambia a 'O', y viceversa.
-    currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+    // Si el jugador actual es 'S', lo cambia a 'C', y viceversa.
+    currentPlayer = (currentPlayer == 'S') ? 'C' : 'S';
 }
 
-// Retorna el símbolo del jugador actual ('X' o 'O').
+// Retorna el símbolo del jugador actual ('S' o 'C').
 char ConnectFour::getCurrentPlayer() const {
     // Devuelve el símbolo del jugador actual.
     return currentPlayer;
