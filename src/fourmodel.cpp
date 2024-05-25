@@ -6,9 +6,10 @@
 ConnectFour::ConnectFour() : board(rows, std::vector<char>(cols, ' ')), currentPlayer('C') {}
 
 // Imprime el estado actual del tablero de juego en la consola.
-// Cada celda del tablero se muestra con el contenido actual: 'X', 'O' o ' ' (vacío).
 void ConnectFour::printBoard() const {
+    std::cout << "TABLERO" << std::endl;
     for (int row = 0; row < rows; row++) {
+        std::cout << row + 1;
         for (int col = 0; col < cols; col++) {
             std::cout << "| " << board[row][col];
         }
