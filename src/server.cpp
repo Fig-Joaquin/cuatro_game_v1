@@ -3,7 +3,9 @@
 #include <string.h>     // memset()
 #include <unistd.h> 
 #include <iostream>
+#include <sstream>      // stringstream
 #include <pthread.h> // pthread_create, pthread_detach
+#include "fourmodel.h"
 
 using namespace std;
 
@@ -18,6 +20,11 @@ void *jugar(void *arg) {
     struct sockaddr_in direccionCliente = clienteInfo->direccionCliente;
     delete clienteInfo; // Liberar la memoria asignada para ClienteInfo
 
+    ConnectFour game;
+    bool gameWon = false;
+    int turns = 0;
+    const int maxTurns = ConnectFour::getRows() * ConnectFour::getCols();
+
     char buffer[1024];
     memset(buffer, '\0', sizeof(char)*1024);
     int n_bytes = 0;
@@ -27,7 +34,7 @@ void *jugar(void *arg) {
 
     cout << "[" << ip << ":" << ntohs(direccionCliente.sin_port) << "] Nuevo jugador." << endl;
 
-    while ((n_bytes = recv(socket_cliente, buffer, 1024, 0))) {
+    while (!gameWon && turns < maxTurns && (n_bytes = recv(socket_cliente, buffer, 1024, 0)) > 0) {
         buffer[n_bytes] = '\0';
 
         if (buffer[0] == 'Q') {
@@ -36,20 +43,46 @@ void *jugar(void *arg) {
             break;
         }
 
-        switch (buffer[0]) {
-            case 'C':       // C columna
-                {
-                string line(&buffer[0]);
-                cout << "[" << ip << ":" << ntohs(direccionCliente.sin_port) << "] Columna: " << line[2] << endl;
-                send(socket_cliente, "ok\n", 3, 0);
-                break;
-                }
-            default:
-                // instrucción no reconocida.
-                send(socket_cliente, "error\n", 6, 0);
+        int col = buffer[0] - '1';  // Convertir char a int (asumiendo entrada '1'-'7')
+
+        if (!game.placeToken(col)) {
+            const char* msg = "Column is full or invalid. Try again.\n";
+            send(socket_cliente, msg, strlen(msg), 0);
+            continue;
+        }
+
+        // Enviar estado actual del tablero al cliente
+        stringstream ss;
+        ss << "TABLERO\n";
+        for (int row = 0; row < ConnectFour::getRows(); row++) {
+            ss << row + 1;
+            for (int col = 0; col < ConnectFour::getCols(); col++) {
+                ss << "| " << game.getBoard()[row][col];
+            }
+            ss << "|\n";
+        }
+        for (int col = 0; col < ConnectFour::getCols(); col++) {
+            ss << "  " << col + 1;
+        }
+        ss << "\n";
+
+        send(socket_cliente, ss.str().c_str(), ss.str().length(), 0);
+
+        if (game.checkWin()) {
+            send(socket_cliente, "You win!\n", 9, 0);
+            gameWon = true;
+        } else {
+            game.togglePlayer();
+            turns++;
+            send(socket_cliente, "Move accepted\n", 15, 0);
         }
     }
 
+    if (!gameWon) {
+        send(socket_cliente, "The game is a draw.\n", 20, 0);
+    }
+
+    close(socket_cliente);
     pthread_exit(NULL);
     return NULL;
 }

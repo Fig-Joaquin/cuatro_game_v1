@@ -1,4 +1,3 @@
-// fourmodel.h
 #ifndef FOURMODEL_H
 #define FOURMODEL_H
 
@@ -28,6 +27,8 @@ public:
     static int getRows() { return rows; }
     // Obtener el número de columnas
     static int getCols() { return cols; }
+    // Obtener el estado del tablero
+    const std::vector<std::vector<char>>& getBoard() const { return board; }
 };
 
 #endif // FOURMODEL_H

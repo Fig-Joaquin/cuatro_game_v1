@@ -31,7 +31,7 @@ int main() {
 
     string message;
     while (true) {
-        cout << "Enter message: ";
+        cout << "Enter column (1-7) or Q to quit: ";
         getline(cin, message);
         send(sock, message.c_str(), message.length(), 0);
         if (message == "Q") {
@@ -40,6 +40,9 @@ int main() {
         int valread = read(sock, buffer, 1024);
         buffer[valread] = '\0';
         cout << buffer << endl;
+        if (strstr(buffer, "win") || strstr(buffer, "draw")) {
+            break;
+        }
     }
 
     close(sock);
