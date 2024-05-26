@@ -31,3 +31,4 @@ run: $(EXEC)
 	./$(EXEC)
 
 .PHONY: all clean run
+
