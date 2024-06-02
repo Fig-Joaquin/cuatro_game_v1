@@ -30,7 +30,7 @@ La recreación del juego, se desarrolló en C++ a través de sockets con la fina
 * **game.cpp:** Implementa la lógica principal del juego, inicializando la partida, gestionando los turnos, mostrando el tablero y detectando al ganador.
 * **Makefile:** Contiene las instrucciones para compilar el proyecto de forma eficiente, simplificando el proceso de desarrollo.
 * **server.cpp:** Toma las riendas del servidor, creando el socket de escucha, aceptando conexiones de clientes, gestionando hilos individuales para cada jugador y manejando el envío y recepción de mensajes.
-
+El uso de hilos permite que cada cliente juegue su propia partida contra la CPU sin interferir con otros clientes. Esto asegura que el servidor pueda manejar múltiples conexiones simultáneamente.
 ## Server.cpp
 Este es el servidor del juego. Se puede comunicar con diferentes clientes, para así crear varios juegos de manera simultánea. 
 * El código utiliza sockets de POSIX para establecer y gestionar la comunicación en red entre el servidor y múltiples clientes. Esto es esencial para juegos multijugador en red, permitiendo que los clientes y el servidor intercambien datos de manera eficiente y en tiempo real.
