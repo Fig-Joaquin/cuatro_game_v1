@@ -1,5 +1,5 @@
 # Juego Conecta Cuatro
-Creado por Joaquín Sanchez e Ignacio Muñoz
+Software desarrollado por Joaquín Sanchez e Ignacio Muñoz.
 
 ## Introducción
 
@@ -38,7 +38,7 @@ La recreación del juego, se desarrolló en C++ a través de sockets con la fina
 
 Para preparar el juego para su ejecución, sigue estos sencillos pasos:
 
-1. Abre una terminal y clona el repositorio. Puedes bajar el zip también (Opcional).
+1. Abre una terminal y clona el repositorio. Puedes bajar el zip también. (Opcional)
 2. Navega hasta la carpeta src mediante la terminal con los comandos cd.
 3. Ejecuta el comando `make` para compilar el proyecto (Debes estar dentro la carpeta src). Esto generará los ejecutables `client` y `server` en la carpeta `src`.
 
