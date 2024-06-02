@@ -6,7 +6,15 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char **argv) {
+    if (argc != 3) {
+        cout << "Usage: " << argv[0] << " <IP> <port>\n";
+        return -1;
+    }
+
+    const char *server_ip = argv[1];
+    int port = atoi(argv[2]);
+
     int sock = 0;
     struct sockaddr_in serv_addr;
     char buffer[1024] = {0};
@@ -17,9 +25,9 @@ int main() {
     }
 
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(8081);  // Cambia el puerto si es necesario
+    serv_addr.sin_port = htons(port);
 
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, server_ip, &serv_addr.sin_addr) <= 0) {
         cout << "Invalid address/ Address not supported" << endl;
         return -1;
     }
@@ -29,30 +37,41 @@ int main() {
         return -1;
     }
 
-    string mode;
+    string message;
     while (true) {
-        cout << "Select mode: (1) Play against CPU, (2) Play against another player: ";
-        cin >> mode;
-        if (mode == "1" || mode == "2") {
-            send(sock, mode.c_str(), mode.length(), 0);
+        cout << "Escribe 'start' para comenzar a jugar.\n#: ";
+        cin >> message;
+        if (message == "start") {
+            send(sock, message.c_str(), message.length(), 0);
             break;
+        }
+        if (message == "Q") {
+            close(sock);
+            return 0;
         } else {
-            cout << "Invalid selection. Please choose 1 or 2." << endl;
+            cout << "Para jugar debes escribir: 'start'\nSi quieres terminar la sesión escribe: 'Q'\n#: ";
         }
     }
 
-    // Recibir quién comienza el juego y mostrar el tablero inicial
+    // Recibir quién comienza el juego, quién es el jugador, y mostrar el tablero inicial
     int valread = read(sock, buffer, 1024);
     buffer[valread] = '\0';
     cout << buffer << endl;
 
-    string message;
     while (true) {
+        memset(buffer, 0, sizeof(buffer)); // Limpiar buffer
         valread = read(sock, buffer, 1024);
+        if (valread <= 0) {
+            cout << "Connection closed." << endl;
+            break;
+        }
         buffer[valread] = '\0';
+
+        // Mostrar el mensaje recibido
         cout << buffer << endl;
-        if (strstr(buffer, "Your turn")) {
-            cout << "Enter column (1-7) or Q to quit: ";
+
+        if (strstr(buffer, "Es tu turno")) {
+            cout << "Escoge el número de columna (1-7) o Q para salir.\n#: ";
             cin >> message;
             if (message == "Q") {
                 send(sock, message.c_str(), message.length(), 0);
@@ -61,10 +80,12 @@ int main() {
             if (message.length() == 1 && message[0] >= '1' && message[0] <= '7') {
                 send(sock, message.c_str(), message.length(), 0);
             } else {
-                cout << "Invalid input. Please enter a column number (1-7) or Q to quit." << endl;
+                cout << "Por favor. Escoge el número de columna (1-7) o Q para salir." << endl;
                 continue;
             }
-        } else if (strstr(buffer, "win") || strstr(buffer, "draw") || strstr(buffer, "Opponent quit the game.")) {
+        } else if (strstr(buffer, "Ganaste!") || strstr(buffer, "El servidor ganó!") || strstr(buffer, "Juego termina en empate") || strstr(buffer, "Se perdió la conexión.")) {
+            // Mostrar el mensaje final y salir del bucle
+            cout << buffer << endl;
             break;
         }
     }

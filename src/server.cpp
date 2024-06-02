@@ -16,13 +16,6 @@ struct ClienteInfo {
     struct sockaddr_in direccionCliente;
 };
 
-struct JuegoInfo {
-    int socket_cliente1;
-    int socket_cliente2;
-    struct sockaddr_in direccionCliente1;
-    struct sockaddr_in direccionCliente2;
-};
-
 void enviarTablero(int socket_cliente, const ConnectFour &game) {
     stringstream ss;
     ss << "TABLERO\n";
@@ -59,62 +52,77 @@ void *jugarContraCPU(void *arg) {
     char ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(direccionCliente.sin_addr), ip, INET_ADDRSTRLEN);
 
-    cout << "[" << ip << ":" << ntohs(direccionCliente.sin_port) << "] Nuevo jugador contra CPU." << endl;
+    cout << "[" << ip << ":" << ntohs(direccionCliente.sin_port) << "] Nuevo jugador." << endl;
 
     // Seleccionar al azar quién comienza el juego
     srand(time(0));
     bool isPlayerTurn = rand() % 2 == 0;
     if (isPlayerTurn) {
-        send(socket_cliente, "You start.\n", 11, 0);
+        cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: Jugador inicia." << endl;
+        send(socket_cliente, "Empiezas tu.\n", 12, 0);
     } else {
-        send(socket_cliente, "Server starts.\n", 15, 0);
+        cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: Servidor inicia." << endl;
+        send(socket_cliente, "Servidor inicia.\n", 17, 0);
         game.togglePlayer(); // Cambia a jugador 'S' para que el servidor juegue primero
     }
 
     enviarTablero(socket_cliente, game);
 
-    while (!gameWon && turns < maxTurns && (n_bytes = recv(socket_cliente, buffer, 1024, 0)) > 0) {
-        buffer[n_bytes] = '\0';
-
-        if (buffer[0] == 'Q') {
-            cout << "[" << ip << ":" << ntohs(direccionCliente.sin_port) << "] Sale del juego." << endl;
-            close(socket_cliente);
-            break;
-        }
-
-        int col;
+    while (!gameWon && turns < maxTurns) {
         if (isPlayerTurn) {
-            col = buffer[0] - '1'; // Convertir char a int (asumiendo entrada '1'-'7')
+            send(socket_cliente, "Es tu turno.\n", 13, 0);
+            n_bytes = recv(socket_cliente, buffer, 1024, 0);
+            if (n_bytes <= 0) {
+                cout << "Error en la comunicación con el jugador." << endl;
+                send(socket_cliente, "Error en la comunicación, juego terminado.\n", 43, 0);
+                close(socket_cliente);
+                pthread_exit(NULL);
+                return NULL;
+            }
+
+            buffer[n_bytes] = '\0';
+
+            if (buffer[0] == 'Q') {
+                cout << "[" << ip << ":" << ntohs(direccionCliente.sin_port) << "] Sale del juego." << endl;
+                send(socket_cliente, "El oponente salió del juego.\n", 30, 0);
+                close(socket_cliente);
+                break;
+            }
+
+            int col = buffer[0] - '1';  // Convertir char a int (asumiendo entrada '1'-'7')
             if (!game.placeToken(col)) {
-                const char *msg = "Column is full or invalid. Try again.\n";
+                const char* msg = "La columna está llena o es inválida. Inténtalo de nuevo.\n";
                 send(socket_cliente, msg, strlen(msg), 0);
                 continue;
             }
+            cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: Cliente juega columna " << col + 1 << "." << endl;
         } else {
             // El servidor selecciona una columna al azar
+            int col;
             do {
                 col = rand() % ConnectFour::getCols();
             } while (!game.placeToken(col));
             stringstream ss;
-            ss << "Server chose column " << (col + 1) << ".\n";
+            ss << "Servidor eligió la columna " << (col + 1) << ".\n";
             send(socket_cliente, ss.str().c_str(), ss.str().length(), 0);
+            cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: Servidor juega columna " << col + 1 << "." << endl;
         }
 
         enviarTablero(socket_cliente, game);
 
         if (game.checkWin()) {
-            send(socket_cliente, isPlayerTurn ? "You win!\n" : "Server wins!\n", 12, 0);
+            send(socket_cliente, isPlayerTurn ? "¡Has ganado!\n" : "¡La Servidor ha ganado!\n", 19, 0);
+            cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: " << (isPlayerTurn ? "Cliente" : "Servidor") << " ha ganado." << endl;
             gameWon = true;
         } else {
             game.togglePlayer();
             isPlayerTurn = !isPlayerTurn;
             turns++;
-            send(socket_cliente, "Move accepted\n", 15, 0);
         }
     }
 
     if (!gameWon) {
-        send(socket_cliente, "The game is a draw.\n", 20, 0);
+        send(socket_cliente, "El juego es un empate.\n", 22, 0);
     }
 
     close(socket_cliente);
@@ -122,205 +130,89 @@ void *jugarContraCPU(void *arg) {
     return NULL;
 }
 
-void *jugarContraJugador(void *arg) {
-    JuegoInfo *juegoInfo = (JuegoInfo *)arg;
-    int socket_cliente1 = juegoInfo->socket_cliente1;
-    int socket_cliente2 = juegoInfo->socket_cliente2;
-    struct sockaddr_in direccionCliente1 = juegoInfo->direccionCliente1;
-    struct sockaddr_in direccionCliente2 = juegoInfo->direccionCliente2;
-    delete juegoInfo; // Liberar la memoria asignada para JuegoInfo
-
-    ConnectFour game;
-    bool gameWon = false;
-    int turns = 0;
-    const int maxTurns = ConnectFour::getRows() * ConnectFour::getCols();
+void *manejarCliente(void *arg) {
+    ClienteInfo *clienteInfo = (ClienteInfo *)arg;
+    int socket_cliente = clienteInfo->socket_cliente;
 
     char buffer[1024];
     memset(buffer, '\0', sizeof(char) * 1024);
-    int n_bytes = 0;
+    int n_bytes = recv(socket_cliente, buffer, 1024, 0);
 
-    char ip1[INET_ADDRSTRLEN];
-    char ip2[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &(direccionCliente1.sin_addr), ip1, INET_ADDRSTRLEN);
-    inet_ntop(AF_INET, &(direccionCliente2.sin_addr), ip2, INET_ADDRSTRLEN);
-
-    cout << "[" << ip1 << ":" << ntohs(direccionCliente1.sin_port) << "] vs [" << ip2 << ":" << ntohs(direccionCliente2.sin_port) << "] Juego iniciado." << endl;
-
-    // Seleccionar al azar quién comienza el juego
-    srand(time(0));
-    bool isPlayer1Turn = rand() % 2 == 0;
-    send(socket_cliente1, isPlayer1Turn ? "You start.\n" : "Opponent starts.\n", 20, 0);
-    send(socket_cliente2, isPlayer1Turn ? "Opponent starts.\n" : "You start.\n", 20, 0);
-
-    enviarTablero(socket_cliente1, game);
-    enviarTablero(socket_cliente2, game);
-
-    while (!gameWon && turns < maxTurns) {
-        int currentSocket = isPlayer1Turn ? socket_cliente1 : socket_cliente2;
-        int waitingSocket = isPlayer1Turn ? socket_cliente2 : socket_cliente1;
-
-        // Informar al jugador actual que es su turno
-        send(currentSocket, "Your turn\n", 10, 0);
-        send(waitingSocket, "Opponent's turn\n", 15, 0);
-
-        n_bytes = recv(currentSocket, buffer, 1024, 0);
-        if (n_bytes <= 0) {
-            cout << "Error en la comunicación con el jugador." << endl;
-            send(socket_cliente1, "Error in communication, game terminated.\n", 40, 0);
-            send(socket_cliente2, "Error in communication, game terminated.\n", 40, 0);
-            close(socket_cliente1);
-            close(socket_cliente2);
-            pthread_exit(NULL);
-            return NULL;
-        }
-
-        buffer[n_bytes] = '\0';
-
-        if (buffer[0] == 'Q') {
-            cout << "El jugador ha salido del juego." << endl;
-            send(socket_cliente1, "Opponent quit the game.\n", 24, 0);
-            send(socket_cliente2, "Opponent quit the game.\n", 24, 0);
-            close(socket_cliente1);
-            close(socket_cliente2);
-            pthread_exit(NULL);
-            return NULL;
-        }
-
-        int col = buffer[0] - '1'; // Convertir char a int (asumiendo entrada '1'-'7')
-        if (!game.placeToken(col)) {
-            const char *msg = "Column is full or invalid. Try again.\n";
-            send(currentSocket, msg, strlen(msg), 0);
-            continue;
-        }
-
-        enviarTablero(socket_cliente1, game);
-        enviarTablero(socket_cliente2, game);
-
-        if (game.checkWin()) {
-            send(socket_cliente1, isPlayer1Turn ? "You win!\n" : "Opponent wins!\n", 15, 0);
-            send(socket_cliente2, isPlayer1Turn ? "Opponent wins!\n" : "You win!\n", 15, 0);
-            gameWon = true;
+    if (n_bytes > 0 && strcmp(buffer, "start") == 0) {
+        pthread_t thread_id;
+        if (pthread_create(&thread_id, NULL, jugarContraCPU, (void *)clienteInfo) != 0) {
+            cout << "Error creando el hilo\n";
+            close(socket_cliente);
+            delete clienteInfo;
         } else {
-            game.togglePlayer();
-            isPlayer1Turn = !isPlayer1Turn;
-            turns++;
+            pthread_detach(thread_id);
         }
+    } else {
+        close(socket_cliente);
+        delete clienteInfo;
     }
 
-    if (!gameWon) {
-        send(socket_cliente1, "The game is a draw.\n", 20, 0);
-        send(socket_cliente2, "The game is a draw.\n", 20, 0);
-    }
-
-    close(socket_cliente1);
-    close(socket_cliente2);
-    pthread_exit(NULL);
     return NULL;
 }
 
 int main(int argc, char **argv) {
     if (argc != 2) {
-        cout << "Usage: " << argv[0] << " <port>\n";
+        cout << "Uso: " << argv[0] << " <puerto>\n";
         exit(EXIT_FAILURE);
     }
 
     int port = atoi(argv[1]);
     int socket_server = 0;
-    struct sockaddr_in direccionServidor, direccionCliente;
+    struct sockaddr_in direccionServidor;
 
-    cout << "Creating listening socket ...\n";
+    cout << "Creando socket de escucha...\n";
     if ((socket_server = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        cout << "Error creating listening socket\n";
+        cout << "Error al crear el socket de escucha\n";
         exit(EXIT_FAILURE);
     }
 
-    cout << "Configuring socket address structure ...\n";
+    cout << "Configurando estructura de dirección del socket...\n";
     memset(&direccionServidor, 0, sizeof(direccionServidor));
     direccionServidor.sin_family = AF_INET;
     direccionServidor.sin_addr.s_addr = htonl(INADDR_ANY);
     direccionServidor.sin_port = htons(port);
 
-    cout << "Binding socket ...\n";
-    if (bind(socket_server, (struct sockaddr *) &direccionServidor, sizeof(direccionServidor)) < 0) {
-        cout << "Error calling bind()\n";
+    cout << "Enlazando el socket...\n";
+    if (bind(socket_server, (struct sockaddr *)&direccionServidor, sizeof(direccionServidor)) < 0) {
+        cout << "Error al llamar a bind()\n";
         exit(EXIT_FAILURE);
     }
 
-    cout << "Calling listening ...\n";
+    cout << "Llamando a listen...\n";
     if (listen(socket_server, 1024) < 0) {
-        cout << "Error calling listen()\n";
+        cout << "Error al llamar a listen()\n";
         exit(EXIT_FAILURE);
     }
 
     socklen_t addr_size = sizeof(struct sockaddr_in);
 
-    cout << "Waiting client request ...\n";
+    cout << "Esperando conexiones...\n";
+
     while (true) {
-        int socket_cliente1;
-        if ((socket_cliente1 = accept(socket_server, (struct sockaddr *)&direccionCliente, &addr_size)) < 0) {
-            cout << "Error calling accept()\n";
+        int socket_cliente;
+        struct sockaddr_in direccionCliente;
+        socket_cliente = accept(socket_server, (struct sockaddr *)&direccionCliente, &addr_size);
+        if (socket_cliente < 0) {
+            cout << "Error al llamar a accept()" << endl;
             continue;
         }
 
-        // Recibir la elección de modo de juego del primer cliente
-        char buffer[1024];
-        int n_bytes = recv(socket_cliente1, buffer, 1024, 0);
-        buffer[n_bytes] = '\0';
-        string mode1(buffer);
+        ClienteInfo *clienteInfo = new ClienteInfo;
+        clienteInfo->socket_cliente = socket_cliente;
+        clienteInfo->direccionCliente = direccionCliente;
 
-        if (mode1 == "1") {
-            ClienteInfo *cpuInfo = new ClienteInfo;
-            cpuInfo->socket_cliente = socket_cliente1;
-            cpuInfo->direccionCliente = direccionCliente;
-            pthread_t thread_id;
-            if (pthread_create(&thread_id, NULL, jugarContraCPU, (void *)cpuInfo) != 0) {
-                cout << "Error creating thread\n";
-                close(socket_cliente1);
-                delete cpuInfo;
-            } else {
-                pthread_detach(thread_id); // Detach the thread so that it cleans up after itself
-            }
-        } else if (mode1 == "2") {
-            // Esperar al segundo cliente y confirmar su modo de juego
-            int socket_cliente2;
-            struct sockaddr_in direccionCliente2;
-            cout << "Esperando al segundo jugador..." << endl;
-
-            if ((socket_cliente2 = accept(socket_server, (struct sockaddr *)&direccionCliente2, &addr_size)) < 0) {
-                cout << "Error llamando a accept()" << endl;
-                close(socket_cliente1);
-                continue;
-            }
-
-            // Recibir la elección de modo de juego del segundo cliente
-            n_bytes = recv(socket_cliente2, buffer, 1024, 0);
-            buffer[n_bytes] = '\0';
-            string mode2(buffer);
-
-            if (mode2 == "2") {
-                JuegoInfo *juegoInfo = new JuegoInfo;
-                juegoInfo->socket_cliente1 = socket_cliente1;
-                juegoInfo->socket_cliente2 = socket_cliente2;
-                juegoInfo->direccionCliente1 = direccionCliente;
-                juegoInfo->direccionCliente2 = direccionCliente2;
-
-                pthread_t thread_id;
-                if (pthread_create(&thread_id, NULL, jugarContraJugador, (void *)juegoInfo) != 0) {
-                    cout << "Error creating thread\n";
-                    close(socket_cliente1);
-                    close(socket_cliente2);
-                    delete juegoInfo;
-                } else {
-                    pthread_detach(thread_id); // Detach the thread so that it cleans up after itself
-                }
-            } else {
-                cout << "Invalid game mode selected by second client.\n";
-                close(socket_cliente1);
-                close(socket_cliente2);
-            }
+        pthread_t thread_id;
+        if (pthread_create(&thread_id, NULL, manejarCliente, (void *)clienteInfo) != 0) {
+            cout << "Error creando el hilo\n";
+            close(socket_cliente);
+            delete clienteInfo;
         } else {
-            cout << "Invalid game mode selected.\n";
-            close(socket_cliente1);
+            pthread_detach(thread_id);
         }
     }
 

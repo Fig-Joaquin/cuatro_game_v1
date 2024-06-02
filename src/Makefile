@@ -1,20 +1,9 @@
-# Nombre del compilador
-CXX = g++
+# Makefile
 
-# Opciones de compilación
+CXX = g++
 CXXFLAGS = -Wall -std=c++11 -pthread
 
-# Archivos fuente
-SRCS = client.cpp server.cpp fourmodel.cpp
-
-# Archivos objeto
-OBJS = $(SRCS:.cpp=.o)
-
-# Ejecutables
-TARGETS = client server
-
-# Reglas de compilación
-all: $(TARGETS)
+all: client server
 
 client: client.o fourmodel.o
 	$(CXX) $(CXXFLAGS) -o client client.o fourmodel.o
@@ -22,9 +11,14 @@ client: client.o fourmodel.o
 server: server.o fourmodel.o
 	$(CXX) $(CXXFLAGS) -o server server.o fourmodel.o
 
-%.o: %.cpp fourmodel.h
-	$(CXX) $(CXXFLAGS) -c $<
+client.o: client.cpp fourmodel.h
+	$(CXX) $(CXXFLAGS) -c client.cpp
 
-# Regla para limpiar archivos objeto y ejecutables
+server.o: server.cpp fourmodel.h
+	$(CXX) $(CXXFLAGS) -c server.cpp
+
+fourmodel.o: fourmodel.cpp fourmodel.h
+	$(CXX) $(CXXFLAGS) -c fourmodel.cpp
+
 clean:
-	rm -f $(OBJS) $(TARGETS)
+	rm -f *.o client server
