@@ -124,9 +124,10 @@ void *jugarContraCPU(void *arg) {
 
         if (game.checkWin()) {
             // Si hay un ganador
-            send(socket_cliente, isPlayerTurn ? "¡Has ganado!\n" : "¡La Servidor ha ganado!\n", 19, 0);
+            send(socket_cliente, isPlayerTurn ? "¡Has ganado!\n" : "¡Servidor ganó!\n", 19, 0);
             cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: " << (isPlayerTurn ? "Cliente" : "Servidor") << " ha ganado." << endl;
             gameWon = true;
+            cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: Juego terminado." << endl;
         } else {
             game.togglePlayer(); // Cambiar de jugador
             isPlayerTurn = !isPlayerTurn; // Alternar el turno
@@ -137,6 +138,8 @@ void *jugarContraCPU(void *arg) {
     if (!gameWon) {
         // Si se llega al máximo de turnos sin ganador, es un empate
         send(socket_cliente, "El juego es un empate.\n", 22, 0);
+        cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: Juego terminado." << endl;
+
     }
 
     close(socket_cliente); // Cerrar el socket del cliente
@@ -177,7 +180,7 @@ void *manejarCliente(void *arg) {
 int main(int argc, char **argv) {
     if (argc != 2) {
         // Verificar si se pasó el número de argumentos correcto
-        cout << "Uso: " << argv[0] << " <puerto>\n";
+        cout << "Verificar: " << argv[0] << " <puerto>\n";
         exit(EXIT_FAILURE); // Terminar el programa si los argumentos son incorrectos
     }
 

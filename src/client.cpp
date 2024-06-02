@@ -9,7 +9,7 @@ using namespace std;
 int main(int argc, char **argv) {
     // Verificar argumentos de línea de comandos (IP y puerto)
     if (argc != 3) {
-        cout << "Usage: " << argv[0] << " <IP> <port>\n";
+        cout << "Verificar: " << argv[0] << " <IP> <port>\n";
         return -1;
     }
 
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
     // Crear socket
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        cout << "Socket creation error" << endl;
+        cout << "Falló en la creación del socket" << endl;
         return -1;
     }
 
@@ -33,13 +33,13 @@ int main(int argc, char **argv) {
 
     // Convertir dirección IP a dirección de red
     if (inet_pton(AF_INET, server_ip, &serv_addr.sin_addr) <= 0) {
-        cout << "Invalid address/ Address not supported" << endl;
+        cout << "IP invalida" << endl;
         return -1;
     }
 
     // Conectar al servidor
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-        cout << "Connection Failed" << endl;
+        cout << "Conexión fallida" << endl;
         return -1;
     }
 
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
         valread = read(sock, buffer, 1024);
         // Verificar si la conexión se cerró
         if (valread <= 0) {
-            cout << "Connection closed." << endl;
+            cout << "Fin del juego." << endl;
             break;
         }
         buffer[valread] = '\0';

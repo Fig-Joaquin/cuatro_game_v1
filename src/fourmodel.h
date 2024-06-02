@@ -6,7 +6,9 @@
 class ConnectFour {
 private:
     std::vector<std::vector<char>> board;
+    // filas
     static const int rows = 6;
+    // columnas
     static const int cols = 7;
     char currentPlayer;
 
