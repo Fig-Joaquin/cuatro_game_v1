@@ -33,7 +33,8 @@ La recreación del juego, se desarrolló en C++ a través de sockets con la fina
 ## Requisitos previos para la compilación y ejecución
 1. Tener instalado el gcc, g++ o por defecto el lenguaje C y C++.
 2. Sistema operativo Linux. (No testeado en otros sistemas)
-
+3. Si el servidor se abre en el puerto 8080, el puerto debe estar liberado.
+4. En el caso de que el servidor se ejecute correctamente y el puerto sea 8080, el cliente debe tener el mismo puerto de conexión, en este caso 8080.
 ## Compilación y ejecución
 
 Para preparar el juego para su ejecución, sigue estos sencillos pasos:
@@ -45,14 +46,15 @@ Para preparar el juego para su ejecución, sigue estos sencillos pasos:
 ## **Ejecutando el servidor:**
 
 1. Abre una terminal y navega hasta el directorio `src` si es qué ya no estás en la carpeta.
-2. Ejecuta el comando `./server <puerto>`, reemplazando `<puerto>` por el puerto que deseas utilizar para las conexiones. 
+2. Ejecuta el comando `./server <puerto>`, reemplazando `<puerto>` por el puerto que deseas utilizar para las conexiones. (El puerto puede ser variable)
 *  Ejemplo: 
 ```bash
 ./server 7777
 ```
 3. El servidor ya estará listo para recibir jugadores en ese puerto.
 4. El cliente tendrá que escribir start para conectar con el servidor.
-5.  
+5. El servidor mostrará si existe un Juego nuevo. esto es debido dado a que un cliente escribió start en la terminal.
+6. El servidor mostrará los movimientos de cada cliente y quién ganó.
 
 ## **Ejecutando el cliente:**
 
