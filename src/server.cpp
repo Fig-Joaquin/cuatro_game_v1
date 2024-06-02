@@ -52,7 +52,7 @@ void *jugarContraCPU(void *arg) {
     char ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(direccionCliente.sin_addr), ip, INET_ADDRSTRLEN);
 
-    cout << "[" << ip << ":" << ntohs(direccionCliente.sin_port) << "] Nuevo jugador." << endl;
+    cout << "¡Juego nuevo! Jugador: "<< "[" << ip << ":" << ntohs(direccionCliente.sin_port) << "]" << endl;
 
     // Seleccionar al azar quién comienza el juego
     srand(time(0));
@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
 
     socklen_t addr_size = sizeof(struct sockaddr_in);
 
-    cout << "Esperando conexiones...\n";
+    cout << "Esperando nuevas conexiones...\n";
 
     while (true) {
         int socket_cliente;
