@@ -3,7 +3,7 @@ Software desarrollado por Joaquín Sanchez e Ignacio Muñoz.
 
 ## Introducción
 
-El juego consiste en una recreación del juego Conecta Cuatro. En pocas palabras, dos jugadores deben tirar fichas, 21 fichas como máximo por persona, si conectan 4 fichas de forma horizontal, vertical u horizontal se dicta el ganador del juego.
+El juego consiste en una recreación del juego Conecta Cuatro. En pocas palabras, dos jugadores deben tirar fichas, 1 ficha por turno y cada jugador tiene 21 fichas como máximo, si conectan 4 fichas de forma horizontal, vertical u horizontal se dicta el ganador del juego.
 
 La recreación del juego, se desarrolló en C++ a través de sockets con la finalidad de que exista un cliente y un servidor. El cliente se conecta a través del servidor mediante la IP y un Puerto para crear una conexión y así el cliente pueda jugar contra el servidor. El cliente tiene por defecto la ficha de nombre C y el servidor tiene por defecto la ficha de nombre S.
 
