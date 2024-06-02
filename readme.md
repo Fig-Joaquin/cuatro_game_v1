@@ -53,27 +53,27 @@ Este es el servidor del juego. Se puede comunicar con diferentes clientes, para 
 ## Client.cpp
 Lógica del código.
 1. Verifica que se proporcionen correctamente la dirección IP del servidor y el puerto a través de los argumentos de línea de comandos.
-1. Conexión al Servidor:
+2. Conexión al Servidor:
 * Crea un socket para la comunicación.
 * Configura la dirección del servidor y convierte la dirección IP en un formato de red.
 * Establece una conexión con el servidor.
-1. Interacción con el Usuario:
+3. Interacción con el Usuario:
 * Solicita al usuario que escriba "start" para comenzar el juego o "Q" para salir.
 * Envía el comando al servidor para iniciar el juego o termina si el usuario elige salir.
 * Existe un manejo de errores con las entradas.
-1. Bucle Principal del Juego:
+4. Bucle Principal del Juego:
 * Recibe y muestra mensajes del servidor, incluidos el estado del tablero y mensajes de turno.
 * Si es el turno del cliente, solicita al usuario que ingrese una columna válida (1-7) o "Q" para salir, y envía la elección al servidor.
 * Verifica si el juego ha terminado (ganar, perder, empate) y muestra el mensaje correspondiente antes de salir del bucle.
-1. Cierre de la Conexión:
+5. Cierre de la Conexión:
 * Cierra el socket y finaliza el programa cuando el juego termina o si la conexión se pierde.
 
 ## Server.cpp
 ## Requisitos previos para la compilación y ejecución
 1. Tener instalado el gcc, g++ o por defecto el lenguaje C y C++.
-1. Sistema operativo Linux. (No testeado en otros sistemas)
-1. Si el servidor se abre en el puerto 8080, el puerto debe estar liberado.
-1. En el caso de que el servidor se ejecute correctamente y el puerto sea 8080, el cliente debe tener el mismo puerto de conexión, en este caso 8080.
+2. Sistema operativo Linux. (No testeado en otros sistemas)
+3. Si el servidor se abre en el puerto 8080, el puerto debe estar liberado.
+4. En el caso de que el servidor se ejecute correctamente y el puerto sea 8080, el cliente debe tener el mismo puerto de conexión, en este caso 8080.
 
 ## Compilación y ejecución
 
@@ -85,8 +85,8 @@ Para preparar el juego para su ejecución, sigue estos sencillos pasos:
 ```bash
 make
 ``` 
+4. ¡Sin el paso anterior no se podrá ejecutar el servidor ni el cliente!
 
-1. ¡Sin el paso anterior no se podrá ejecutar el servidor ni el cliente!
 ## **Ejecutando el servidor:**
 
 1. Abre una terminal y navega hasta el directorio `src` si es qué ya no estás en la carpeta.
