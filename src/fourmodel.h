@@ -31,6 +31,8 @@ public:
     static int getCols() { return cols; }
     // Obtener el estado del tablero
     const std::vector<std::vector<char>>& getBoard() const { return board; }
+    bool isBoardFull() const; // Nueva función para verificar si el tablero está lleno
+
 };
 
 #endif // FOURMODEL_H

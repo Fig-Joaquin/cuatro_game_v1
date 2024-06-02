@@ -20,7 +20,7 @@ int main() {
         // Imprime el estado actual del tablero.
         game.printBoard();
         // Solicita al jugador actual que introduzca la columna donde desea colocar su ficha.
-        cout << "Player " << game.getCurrentPlayer() << ", enter column (1-" << ConnectFour::getCols() << "): ";
+        cout << "Jugador " << game.getCurrentPlayer() << ", Ingresa un numero (1-" << ConnectFour::getCols() << "): ";
         int col;
         cin >> col;
         // Ajusta el índice de la columna para que coincida con la indexación del array (0-based).
@@ -29,7 +29,7 @@ int main() {
         // Intenta colocar la ficha en la columna seleccionada.
         if (!game.placeToken(col)) {
             // Si la columna está llena o el índice es inválido, informa al jugador y repite el bucle.
-            cout << "Column is full or invalid. Try again." << endl;
+            cout << "La columna está llena. Vuelve a intentar." << endl;
             continue;
         }
 
@@ -37,7 +37,7 @@ int main() {
         if (game.checkWin()) {
             // Si hay un ganador, imprime el tablero y el mensaje de victoria.
             game.printBoard();
-            cout << "Player " << game.getCurrentPlayer() << " wins!" << endl;
+            cout << "Jugador " << game.getCurrentPlayer() << " Gana!" << endl;
             gameWon = true;
         } else {
             // Si no hay ganador, cambia de jugador.
@@ -50,7 +50,7 @@ int main() {
     // Si se alcanza el número máximo de turnos sin un ganador, declara un empate.
     if (!gameWon) {
         game.printBoard();
-        cout << "The game is a draw." << endl;
+        cout << "Empate!." << endl;
     }
 
     // Termina el programa.

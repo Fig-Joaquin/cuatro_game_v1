@@ -46,6 +46,7 @@ void *jugarContraCPU(void *arg) {
 
     ConnectFour game; // Crear una nueva instancia del juego
     bool gameWon = false; // Indicador de si el juego ha sido ganado
+    bool gameDraw = false; // Indicador de si el juego es un empate
     int turns = 0; // Contador de turnos
     const int maxTurns = ConnectFour::getRows() * ConnectFour::getCols(); // Número máximo de turnos
 
@@ -72,7 +73,7 @@ void *jugarContraCPU(void *arg) {
 
     enviarTablero(socket_cliente, game); // Enviar el estado inicial del tablero
 
-    while (!gameWon && turns < maxTurns) {
+    while (!gameWon && !gameDraw && turns < maxTurns) {
         if (isPlayerTurn) {
             send(socket_cliente, "Es tu turno.\n", 13, 0);
             n_bytes = recv(socket_cliente, buffer, 1024, 0);
@@ -128,6 +129,11 @@ void *jugarContraCPU(void *arg) {
             cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: " << (isPlayerTurn ? "Cliente" : "Servidor") << " ha ganado." << endl;
             gameWon = true;
             cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: Juego terminado." << endl;
+        } else if (game.isBoardFull()) {
+            // Si el tablero está lleno
+            send(socket_cliente, "El juego es un empate.\n", 22, 0);
+            cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: Juego terminado." << endl;
+            gameDraw = true;
         } else {
             game.togglePlayer(); // Cambiar de jugador
             isPlayerTurn = !isPlayerTurn; // Alternar el turno
@@ -135,17 +141,17 @@ void *jugarContraCPU(void *arg) {
         }
     }
 
-    if (!gameWon) {
+    if (!gameWon && gameDraw) {
         // Si se llega al máximo de turnos sin ganador, es un empate
         send(socket_cliente, "El juego es un empate.\n", 22, 0);
         cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: Juego terminado." << endl;
-
     }
 
     close(socket_cliente); // Cerrar el socket del cliente
     pthread_exit(NULL); // Terminar el hilo
     return NULL;
 }
+
 
 // Función que maneja la conexión con el cliente
 void *manejarCliente(void *arg) {

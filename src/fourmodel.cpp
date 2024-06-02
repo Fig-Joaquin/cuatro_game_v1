@@ -86,11 +86,21 @@ bool ConnectFour::checkWin() const {
 }
 
 // Cambia el turno al otro jugador.
-
 void ConnectFour::togglePlayer() {
     // Cambia el jugador actual.
     // Si el jugador actual es 'S', lo cambia a 'C', y viceversa.
     currentPlayer = (currentPlayer == 'S') ? 'C' : 'S';
+}
+// verificar si la tabla está llena
+bool ConnectFour::isBoardFull() const {
+    for (int row = 0; row < rows; row++) {
+        for (int col = 0; col < cols; col++) {
+            if (board[row][col] == ' ') {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 // Retorna el símbolo del jugador actual ('S' o 'C').
