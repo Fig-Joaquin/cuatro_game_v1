@@ -20,7 +20,7 @@ La recreación del juego, se desarrolló en C++ a través de sockets con la fina
 * Cada cliente se maneja en un hilo separado.
 
 
-## Descripción detallada de los archivos
+## Estructura del juego mediante los siguientes archivos
 
 **SRC:**
 
@@ -31,11 +31,49 @@ La recreación del juego, se desarrolló en C++ a través de sockets con la fina
 * **Makefile:** Contiene las instrucciones para compilar el proyecto de forma eficiente, simplificando el proceso de desarrollo.
 * **server.cpp:** Toma las riendas del servidor, creando el socket de escucha, aceptando conexiones de clientes, gestionando hilos individuales para cada jugador y manejando el envío y recepción de mensajes.
 
+## Server.cpp
+Este es el servidor del juego. Se puede comunicar con diferentes clientes, para así crear varios juegos de manera simultánea. 
+* El código utiliza sockets de POSIX para establecer y gestionar la comunicación en red entre el servidor y múltiples clientes. Esto es esencial para juegos multijugador en red, permitiendo que los clientes y el servidor intercambien datos de manera eficiente y en tiempo real.
+* El uso de hilos permite que cada cliente juegue su propia partida contra la CPU sin interferir con otros clientes. Esto asegura que el servidor pueda manejar múltiples conexiones simultáneamente.
+* Características.
+1. Almacena la información del cliente, como el socket y la dirección del cliente.
+2. Envía el estado actual del tablero al cliente, representando el tablero como una cadena de texto.
+3. Maneja la lógica del juego entre un cliente y la CPU.
+4. Decide aleatoriamente quién empieza el juego.
+5. Alterna los turnos entre el cliente y la CPU.
+6. Verifica las entradas del cliente para asegurarse de que son válidas.
+7. Actualiza el estado del tablero y verifica si hay un ganador o si se alcanza un empate.
+8. Envía mensajes al cliente sobre el estado del juego y el resultado.
+9. Maneja la conexión inicial con el cliente.
+10. Espera el mensaje "start" del cliente para iniciar el juego.
+11. Crea un hilo separado para manejar el juego utilizando la función jugarContraCPU.
+12. Configura el servidor, crea el socket de escucha y lo enlaza a una dirección y puerto.
+13. Pone el servidor en modo de espera para aceptar nuevas conexiones de clientes.
+14. Para cada nueva conexión, crea una estructura ClienteInfo y un nuevo hilo para manejar el juego del cliente de forma independiente.
+## Client.cpp
+Lógica del código.
+1. Verifica que se proporcionen correctamente la dirección IP del servidor y el puerto a través de los argumentos de línea de comandos.
+1. Conexión al Servidor:
+* Crea un socket para la comunicación.
+* Configura la dirección del servidor y convierte la dirección IP en un formato de red.
+* Establece una conexión con el servidor.
+1. Interacción con el Usuario:
+* Solicita al usuario que escriba "start" para comenzar el juego o "Q" para salir.
+* Envía el comando al servidor para iniciar el juego o termina si el usuario elige salir.
+* Existe un manejo de errores con las entradas.
+1. Bucle Principal del Juego:
+* Recibe y muestra mensajes del servidor, incluidos el estado del tablero y mensajes de turno.
+* Si es el turno del cliente, solicita al usuario que ingrese una columna válida (1-7) o "Q" para salir, y envía la elección al servidor.
+* Verifica si el juego ha terminado (ganar, perder, empate) y muestra el mensaje correspondiente antes de salir del bucle.
+1. Cierre de la Conexión:
+* Cierra el socket y finaliza el programa cuando el juego termina o si la conexión se pierde.
+
+## Server.cpp
 ## Requisitos previos para la compilación y ejecución
 1. Tener instalado el gcc, g++ o por defecto el lenguaje C y C++.
-2. Sistema operativo Linux. (No testeado en otros sistemas)
-3. Si el servidor se abre en el puerto 8080, el puerto debe estar liberado.
-4. En el caso de que el servidor se ejecute correctamente y el puerto sea 8080, el cliente debe tener el mismo puerto de conexión, en este caso 8080.
+1. Sistema operativo Linux. (No testeado en otros sistemas)
+1. Si el servidor se abre en el puerto 8080, el puerto debe estar liberado.
+1. En el caso de que el servidor se ejecute correctamente y el puerto sea 8080, el cliente debe tener el mismo puerto de conexión, en este caso 8080.
 
 ## Compilación y ejecución
 
@@ -43,8 +81,12 @@ Para preparar el juego para su ejecución, sigue estos sencillos pasos:
 
 1. Abre una terminal y clona el repositorio. Puedes bajar el zip también. (Opcional)
 2. Navega hasta la carpeta src mediante la terminal con los comandos cd.
-3. Ejecuta el comando `make` para compilar el proyecto (Debes estar dentro la carpeta src). Esto generará los ejecutables `client` y `server` en la carpeta `src`.
-4. ¡Sin el paso anterior no se podrá ejecutar el servidor ni el cliente!
+3. Ejecuta el comando `make` mediante la terminal para compilar el proyecto (Debes estar dentro la carpeta src). Esto generará los ejecutables `client` y `server` en la carpeta `src`.
+```bash
+make
+``` 
+
+1. ¡Sin el paso anterior no se podrá ejecutar el servidor ni el cliente!
 ## **Ejecutando el servidor:**
 
 1. Abre una terminal y navega hasta el directorio `src` si es qué ya no estás en la carpeta.
