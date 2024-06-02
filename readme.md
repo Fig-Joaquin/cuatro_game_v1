@@ -35,6 +35,7 @@ La recreación del juego, se desarrolló en C++ a través de sockets con la fina
 2. Sistema operativo Linux. (No testeado en otros sistemas)
 3. Si el servidor se abre en el puerto 8080, el puerto debe estar liberado.
 4. En el caso de que el servidor se ejecute correctamente y el puerto sea 8080, el cliente debe tener el mismo puerto de conexión, en este caso 8080.
+
 ## Compilación y ejecución
 
 Para preparar el juego para su ejecución, sigue estos sencillos pasos:
@@ -42,7 +43,7 @@ Para preparar el juego para su ejecución, sigue estos sencillos pasos:
 1. Abre una terminal y clona el repositorio. Puedes bajar el zip también. (Opcional)
 2. Navega hasta la carpeta src mediante la terminal con los comandos cd.
 3. Ejecuta el comando `make` para compilar el proyecto (Debes estar dentro la carpeta src). Esto generará los ejecutables `client` y `server` en la carpeta `src`.
-
+4. ¡Sin el paso anterior no se podrá ejecutar el servidor ni el cliente!
 ## **Ejecutando el servidor:**
 
 1. Abre una terminal y navega hasta el directorio `src` si es qué ya no estás en la carpeta.
@@ -59,7 +60,7 @@ Para preparar el juego para su ejecución, sigue estos sencillos pasos:
 ## **Ejecutando el cliente:**
 
 1. Abre una nueva terminal.
-2. Navega hasta el directorio `src` donde están los archivos del juego.
+2. Navega hasta el directorio `src` donde están los archivos del juego. 
 3. Para jugar contra el servidor, ejecuta el comando `./client <IP> <puerto>`, reemplazando `<IP>` por la dirección IP del servidor y `<puerto>` por el puerto que configuraste anteriormente. (IP puede ser la del localhost)
 *  Ejemplo: 
 ```bash
