@@ -97,6 +97,11 @@ void *jugarContraCPU(void *arg) {
 
             // Convertir la entrada del cliente (columna) de char a int
             int col = buffer[0] - '1';  // Convertir char a int (asumiendo entrada '1'-'7')
+            if (col < 0 || col >= ConnectFour::getCols()) {
+                const char* msg = "Número inválido. Por favor ingrese un número entre 1 y 7.\n";
+                send(socket_cliente, msg, strlen(msg), 0);
+                continue; // Pedir al cliente que intente de nuevo
+            }
             if (!game.placeToken(col)) {
                 const char* msg = "La columna está llena o es inválida. Inténtalo de nuevo.\n";
                 send(socket_cliente, msg, strlen(msg), 0);

@@ -56,7 +56,8 @@ int main(int argc, char **argv) {
         if (message == "Q") {
             close(sock);
             return 0;
-        } else {
+        }
+        else {
             // Informar al usuario sobre los comandos válidos
             cout << "Para jugar debes escribir: 'start'\nSi quieres terminar la sesión escribe: 'Q'\n#: ";
         }
@@ -85,19 +86,22 @@ int main(int argc, char **argv) {
         // Verificar si es tu turno
         if (strstr(buffer, "Es tu turno")) {
             // Solicitar al usuario el número de columna o "Q" para salir
-            cout << "Escoge el número de columna (1-7) o Q para salir.\n#: ";
-            cin >> message;
-            // Verificar si el usuario quiere salir
-            if (message == "Q") {
-                send(sock, message.c_str(), message.length(), 0);
-                break;
-            }
-            // Validar la elección de columna del usuario
-            if (message.length() == 1 && message[0] >= '1' && message[0] <= '7') {
-                send(sock, message.c_str(), message.length(), 0);
-            } else {
-                cout << "Por favor. Escoge el número de columna (1-7) o Q para salir." << endl;
-                continue;
+            while (true) {
+                cout << "Escoge el número de columna (1-7) o Q para salir.\n#: ";
+                cin >> message;
+                // Verificar si el usuario quiere salir
+                if (message == "Q") {
+                    send(sock, message.c_str(), message.length(), 0);
+                    close(sock);
+                    return 0;
+                }
+                // Validar la elección de columna del usuario
+                if (message.length() == 1 && message[0] >= '1' && message[0] <= '7') {
+                    send(sock, message.c_str(), message.length(), 0);
+                    break;
+                } else {
+                    cout << "Por favor. Escoge el número de columna (1-7) o Q para salir." << endl;
+                }
             }
         } else if (strstr(buffer, "Ganaste!") || strstr(buffer, "El servidor ganó!") || strstr(buffer, "Juego termina en empate") || strstr(buffer, "Se perdió la conexión.")) {
             // Mostrar el mensaje final y salir del bucle
