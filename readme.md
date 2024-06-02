@@ -1,4 +1,5 @@
-# Juego Conecta Cuatro creado por Joaquín Sanchez e Ignacio Muñoz
+# Juego Conecta Cuatro
+Creado por Joaquín Sanchez e Ignacio Muñoz
 
 ## Introducción
 
