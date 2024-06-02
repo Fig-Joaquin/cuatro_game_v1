@@ -13,6 +13,7 @@ La recreación del juego, se desarrolló en C++ a través de sockets con la fina
 
 * El juego se desarrolló en C++
 + Se utilizaron sockets para la comunicación entre el cliente y el servidor sobre el protocolo TCP.
+* Juego orientado a objetos.
 * La lógica del juego está encapsulada en fourmodel.h y fourmodel.cpp.
 * game.cpp contiene el bucle principal del juego para una versión local.
 * Se implementó multithreading utilizando <thread> para manejar múltiples clientes concurrentemente en el servidor.
